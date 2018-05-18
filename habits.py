@@ -50,7 +50,7 @@ def main():
             is_habit(content),
             not project_id or task['project_id'] == project_id
         ]):
-            date_string = task['date_string']
+            date_string = task['date_string'] or 'ev day'
             task_id = task['id']
             due_at = parse(task['due_date_utc'], ignoretz=True)
             days_left = due_at.date() - today.date()
