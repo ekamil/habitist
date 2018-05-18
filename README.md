@@ -1,5 +1,5 @@
 # habitist [![Code Climate](https://codeclimate.com/github/amitness/habitist/badges/gpa.svg)](https://codeclimate.com/github/amitness/habitist)
-An automation to enable habit tracking in todoist. 
+An automation to enable habit tracking in todoist.
 
 It integrates Seinfield's "[Don't Break the Chain](https://lifehacker.com/281626/jerry-seinfelds-productivity-secret)" method into [todoist](http://todoist.com/). Once it's setup, you can forget about it and it works seamlessly.
 
@@ -27,14 +27,16 @@ It integrates Seinfield's "[Don't Break the Chain](https://lifehacker.com/281626
 3. Set environment variable with your todost API key. You'll find API key under `Settings > Integrations` on [todoist.com](https://todoist.com).
     ```
      heroku config:set TODOIST_APIKEY='XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
-    ``` 
+    ```
+
+    Optionally set `TODOIST_PROJECT` to a name of a project containing habits.
 
 4. Push the app
     ```
     git push heroku master
     ```
- 
-5. On [IFTTT](http://ifttt.com/), [create](https://ifttt.com/create) a new applet. 
+
+5. On [IFTTT](http://ifttt.com/), [create](https://ifttt.com/create) a new applet.
     - On THIS, select datetime > 'Every Day At' > 12 AM
     - On THAT, select Webhooks > `Make a web request`
     - Set URL to your heroku app URL

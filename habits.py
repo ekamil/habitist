@@ -2,6 +2,7 @@ import os
 import re
 import logging
 from datetime import datetime, timedelta
+from dateutil.parser import parse
 from todoist.api import TodoistAPI
 
 logger = logging.getLogger(__name__)
@@ -13,18 +14,17 @@ def get_token():
     return token
 
 
+def get_project(api):
+    project = os.getenv('TODOIST_PROJECT')
+    if not project:
+        return None
+    for p in api.state['projects']:
+        if p['name'] == project:
+            return p['id']
+
+
 def is_habit(text):
     return re.search(r'\[day\s(\d+)\]', text)
-
-
-def is_today(text):
-    today = (datetime.utcnow() + timedelta(1)).strftime("%a %d %b")
-    return text[:10] == today
-
-
-def is_due(text):
-    yesterday = datetime.utcnow().strftime("%a %d %b")
-    return text[:10] == yesterday
 
 
 def update_streak(item, streak):
@@ -37,20 +37,32 @@ def main():
     API_TOKEN = get_token()
     today = datetime.utcnow().replace(tzinfo=None)
     if not API_TOKEN:
-        logging.warn('Please set the API token in environment variable.')
+        logging.error('Please set the API token in environment variable.')
         exit()
     api = TodoistAPI(API_TOKEN)
     api.sync()
+    project_id = get_project(api)
     tasks = api.state['items']
     for task in tasks:
-        if task['due_date_utc'] and is_habit(task['content']):
-            if is_today(task['due_date_utc']):
-                habit = is_habit(task['content'])
+        content = task['content']
+        if all([
+            task['due_date_utc'],
+            is_habit(content),
+            not project_id or task['project_id'] == project_id
+        ]):
+            date_string = task['date_string']
+            task_id = task['id']
+            due_at = parse(task['due_date_utc'], ignoretz=True)
+            days_left = due_at.date() - today.date()
+            if days_left:
+                habit = is_habit(content)
                 streak = int(habit.group(1)) + 1
                 update_streak(task, streak)
-            elif is_due(task['due_date_utc']):
+                api.notes.add(task_id, '[BOT] Streak extended. Yay!')
+            else:
                 update_streak(task, 0)
-                task.update(date_string='ev day starting tod')
+                task.update(date_string=date_string + ' starting tod')
+                api.notes.add(task_id, '[BOT] Chain broken :(')
     api.commit()
 
 if __name__ == '__main__':
