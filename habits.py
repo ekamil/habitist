@@ -50,6 +50,7 @@ def main():
             is_habit(content),
             not project_id or task['project_id'] == project_id
         ]):
+            logger.info("Found task id:%s content:%s", task['id'], content[:20])
             date_string = task['date_string'] or 'ev day'
             task_id = task['id']
             due_at = parse(task['due_date_utc'], ignoretz=True)
